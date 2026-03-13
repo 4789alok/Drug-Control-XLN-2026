@@ -2,10 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:xln2026/data/pdf/pdf_service.dart';
+import 'package:xln2026/screens/utils/getlocation/getlocation.dart';
 
 class PdfPreviewPage extends StatefulWidget {
   const PdfPreviewPage({super.key});
@@ -21,7 +22,12 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
   String firmId = "";
   String? path;
 
-  /// receive inspection data
+  String latitude = "";
+  String longitude = "";
+  String dateTime = "";
+
+  bool isLoading = true;
+
   late final List<Map<String, String>> inspectionData =
       List<Map<String, String>>.from(Get.arguments['inspectionData']);
 
@@ -33,64 +39,101 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
     super.initState();
 
     firmData = Map<String, dynamic>.from(box.read('firm_data') ?? {});
-
-    /// firm id (saved earlier using box.write('firm_id', data['Firm_Id']))
     firmId = box.read('firm_id')?.toString() ?? "NA";
-    generatePreviewPdf();
+
+    fetchLocationAndGeneratePdf();
   }
 
   // ======================================================
-  // SAFE STORAGE PATH (Android 11+ compatible)
+  // FETCH LOCATION + GENERATE PDF
   // ======================================================
-  Future<String?> getDownloadPath() async {
-    if (Platform.isAndroid) {
-      final directory = await getExternalStorageDirectory();
-      return directory?.path;
-    } else {
-      final directory = await getApplicationDocumentsDirectory();
-      return directory.path;
+  Future<void> fetchLocationAndGeneratePdf() async {
+    try {
+      final position = await LatLong().getCurrentLocation();
+
+      latitude = position.latitude.toStringAsFixed(6);
+      longitude = position.longitude.toStringAsFixed(6);
+
+      final now = DateTime.now();
+      dateTime =
+          "${now.day.toString().padLeft(2, '0')}-"
+          "${now.month.toString().padLeft(2, '0')}-"
+          "${now.year} "
+          "${now.hour.toString().padLeft(2, '0')}:"
+          "${now.minute.toString().padLeft(2, '0')}:"
+          "${now.second.toString().padLeft(2, '0')}";
+    } catch (e) {
+      latitude = "Permission Denied";
+      longitude = "Permission Denied";
+      dateTime = DateTime.now().toString();
     }
+
+    await generatePreviewPdf();
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   // ======================================================
-  // PREVIEW PDF
+  // GENERATE PREVIEW PDF
   // ======================================================
   Future<void> generatePreviewPdf() async {
     final tempDir = await getTemporaryDirectory();
-
     final filePath = "${tempDir.path}/preview.pdf";
     final file = File(filePath);
 
     final bytes = await PdfService.generatePdf(
       inspectionData: inspectionData,
       firmData: firmData,
+      latitude: latitude,
+      longitude: longitude,
+      dateTime: dateTime,
     );
 
     await file.writeAsBytes(bytes);
+
     setState(() {
       path = filePath;
     });
   }
 
   // ======================================================
-  // SAVE PDF WITH DATE + TIME + FIRM ID
+  // SAVE PDF
   // ======================================================
   Future<void> savePdf() async {
     try {
       final bytes = await PdfService.generatePdf(
         inspectionData: inspectionData,
         firmData: firmData,
+        latitude: latitude,
+        longitude: longitude,
+        dateTime: dateTime,
       );
 
-      final dir = await getDownloadPath();
+      final directory = Platform.isAndroid
+          ? await getExternalStorageDirectory()
+          : await getApplicationDocumentsDirectory();
+
+      if (directory == null) {
+        Get.snackbar(
+          "Error",
+          "Storage directory not found",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
       final now = DateTime.now();
       final formattedTime =
-          "${now.year}${_two(now.month)}${_two(now.day)}_${_two(now.hour)}${_two(now.minute)}${_two(now.second)}";
-      final fileName = "Inspection_${firmId}_$formattedTime.pdf";
+          "${now.year}${_two(now.month)}${_two(now.day)}_"
+          "${_two(now.hour)}${_two(now.minute)}${_two(now.second)}";
 
-      final file = File("$dir/$fileName");
+      final fileName = "Inspection_${firmId}_$formattedTime.pdf";
+      final file = File("${directory.path}/$fileName");
 
       await file.writeAsBytes(bytes, flush: true);
+
       Get.closeAllSnackbars();
 
       Get.snackbar(
@@ -105,14 +148,20 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
         colorText: Colors.white,
         icon: const Icon(Icons.check_circle, color: Colors.white),
         mainButton: TextButton(
-          onPressed: () => OpenFilex.open(file.path),
+          onPressed: () async {
+            final result = await OpenFilex.open(file.path);
+
+            if (result.type != ResultType.done) {
+              Get.snackbar(
+                "Error",
+                "Unable to open file",
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            }
+          },
           style: TextButton.styleFrom(
             backgroundColor: Colors.white,
             foregroundColor: Colors.green,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
           ),
           child: const Text(
             "OPEN",
@@ -130,7 +179,6 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
     }
   }
 
-  // helper for 2 digit numbers
   String _two(int n) => n.toString().padLeft(2, '0');
 
   // ======================================================
@@ -141,14 +189,16 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
     return Scaffold(
       appBar: AppBar(title: const Text("PDF Preview")),
 
-      body: path == null
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
+          : path == null
+          ? const Center(child: Text("PDF failed to load"))
           : PDFView(filePath: path),
 
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(12),
         child: ElevatedButton(
-          onPressed: savePdf,
+          onPressed: isLoading ? null : savePdf,
           child: const Text("Save PDF"),
         ),
       ),

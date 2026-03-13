@@ -13,26 +13,38 @@ class HomePage extends StatelessWidget {
       /// ---------------- APP BAR ----------------
       appBar: AppBar(
         backgroundColor: Colors.grey.shade100,
-        automaticallyImplyLeading: false,
         elevation: 0.5,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: const [
-            Text(
-              'Drugs Control Department',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Color(0xffF08000),
-                fontFamily: "Times New Roman",
-              ),
-            ),
-            SizedBox(height: 3),
-            Text(
-              '( Government of Karnataka )',
-              style: TextStyle(
-                fontSize: 12,
-                fontFamily: "Times New Roman",
-                color: Colors.black,
+        automaticallyImplyLeading: false,
+        titleSpacing: 10,
+        title: Row(
+          children: [
+            Image.asset("./images/dcdl.png", height: 50, width: 50),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Drugs Control Department',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xffF08000),
+                      fontFamily: "Times New Roman",
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    '( Government of Karnataka )',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.black,
+                      fontFamily: "Times New Roman",
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -154,7 +166,8 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 10),
 
                     _ActionCard(
-                      title: "Reports Details",
+                      title: "Exit Inspection",
+
                       image: Icons.picture_as_pdf,
                       onTap: () {},
                     ),

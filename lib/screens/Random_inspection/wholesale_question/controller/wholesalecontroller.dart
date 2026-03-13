@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+// import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:xln2026/models/wholesale_questionpage.dart';
 import 'package:xln2026/screens/App_url/appurl.dart';
@@ -9,7 +10,7 @@ import 'package:xln2026/screens/App_url/appurl.dart';
 class WholesaleQuestionController extends GetxController {
   RxBool isLoading = false.obs;
   RxList<LicenseQuestion> questions = <LicenseQuestion>[].obs;
-
+  // final GetStorage box = GetStorage();
   // =========================================================
   // ================= FETCH CHECKLIST =======================
   // =========================================================
@@ -21,6 +22,15 @@ class WholesaleQuestionController extends GetxController {
     isLoading.value = true;
 
     try {
+      // final lastFirm = box.read("last_firm_id");
+
+      // if (lastFirm != null && lastFirm != firmId) {
+      //   box.remove('wholesale_answers_$lastFirm');
+      //   box.remove('wholesale_remarks_$lastFirm');
+      //   log("Old inspection data cleared");
+      // }
+
+      // box.write("last_firm_id", firmId);
       final response = await http.post(
         Uri.parse(AppUrls.licenseChecklistApi),
         headers: {'Content-Type': 'application/json'},

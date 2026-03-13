@@ -41,6 +41,7 @@ class _WholesaleQuespageState extends State<WholesaleQuespage> {
   }
 
   // ================= VALIDATION =================
+  //
   bool validateAllFields(List<LicenseQuestion> data) {
     for (final q in data.where((q) => shouldShowQuestion(q))) {
       if (answers[q.qNo] == null) {
@@ -84,6 +85,7 @@ class _WholesaleQuespageState extends State<WholesaleQuespage> {
         .toList();
   }
 
+  //
   // ================= DRAFT PAYLOAD =================
   List<Map<String, dynamic>> buildDraftPayload(List<LicenseQuestion> data) {
     final args = Get.arguments ?? {};
@@ -163,9 +165,7 @@ class _WholesaleQuespageState extends State<WholesaleQuespage> {
                       final pdfData = buildFinalSubmissionData(
                         controller.questions,
                       );
-
                       final draftData = buildDraftPayload(controller.questions);
-
                       await controller.saveDraft(
                         qaDetails: draftData,
                         onSuccess: () {

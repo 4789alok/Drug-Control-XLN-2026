@@ -6,6 +6,9 @@ class PdfService {
   static Future<Uint8List> generatePdf({
     required List<Map<String, String>> inspectionData,
     required Map<String, dynamic> firmData,
+    required String latitude,
+    required String longitude,
+    required String dateTime,
   }) async {
     final pdf = pw.Document();
 
@@ -14,6 +17,7 @@ class PdfService {
     final fontData = await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
     final pw.Font font = pw.Font.ttf(fontData);
 
+    ///
     /// ================= LOGO =================
     ///
     final logoData = await rootBundle.load('images/karnataka.png');
@@ -104,7 +108,6 @@ class PdfService {
                   ],
                 ),
               ),
-
               pw.SizedBox(width: 8),
 
               /// RIGHT BOX
@@ -150,7 +153,9 @@ class PdfService {
 
           pw.SizedBox(height: 20),
 
+          ///
           /// ================= REMARKS =================
+          ///
           _bold("Remarks :", font),
           pw.Container(
             height: 60,
@@ -168,9 +173,28 @@ class PdfService {
           pw.SizedBox(height: 30),
           pw.Align(
             alignment: pw.Alignment.centerRight,
-            child: pw.Text(
-              "(ONKARESHWARA B.B.A.C)",
-              style: pw.TextStyle(font: font, fontSize: 10),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                pw.Text(
+                  "(ONKARESHWARA B.B.A.C)",
+                  style: pw.TextStyle(font: font, fontSize: 10),
+                ),
+                pw.SizedBox(height: 6),
+
+                pw.Text(
+                  "Latitude  : $latitude",
+                  style: pw.TextStyle(font: font, fontSize: 9),
+                ),
+                pw.Text(
+                  "Longitude : $longitude",
+                  style: pw.TextStyle(font: font, fontSize: 9),
+                ),
+                pw.Text(
+                  "Date & Time : $dateTime",
+                  style: pw.TextStyle(font: font, fontSize: 9),
+                ),
+              ],
             ),
           ),
         ],

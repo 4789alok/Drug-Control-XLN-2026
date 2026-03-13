@@ -124,7 +124,7 @@ class InspectionController extends GetxController {
       final json = jsonDecode(response.body);
       if (json['Message'] == "Inspection Already Updated or Expired") {
         message.value = json['Message'];
-        hideLicenseButtons.value = true; // 🔥 hide buttons
+        hideLicenseButtons.value = true;
         inspectionCreated.value = true;
         return;
       }

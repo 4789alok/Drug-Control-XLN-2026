@@ -1,5 +1,7 @@
 class AppUrls {
   //
+  // static const String baseApi = 'https://dcd.karnataka.gov.in/MobApp/api/';
+  //
   static const String baseApi = 'https://dcd.karnataka.gov.in/MobApp/api/';
   //
   static const String requestotpApi = '${baseApi}Dcd/RequestOTP';

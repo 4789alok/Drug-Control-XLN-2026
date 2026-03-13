@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:xln2026/pdf/pdf_preview_page.dart';
+import 'package:xln2026/screens/Random_inspection/Retail_queation/retail_question.dart';
 import 'package:xln2026/screens/Random_inspection/firm_inspection/firm_inspectionpage.dart';
 import 'package:xln2026/screens/Random_inspection/firm_inspection/inspection_binding/inspection_binding.dart';
 import 'package:xln2026/screens/Random_inspection/wholesale_question/wholesale_quespage.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
           binding: InspectionBinding(),
         ),
         GetPage(name: '/wholesale', page: () => WholesaleQuespage()),
+        GetPage(name: '/retail', page: () => RetailQuespage()),
         GetPage(name: '/pdfpreview', page: () => PdfPreviewPage()),
       ],
     );
